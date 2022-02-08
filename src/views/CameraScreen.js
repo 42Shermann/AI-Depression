@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Camera } from 'expo-camera';
-import * as Sharing from 'expo-sharing';
-import viewSize from '../constant';
+import React, { useState, useEffect } from 'react'
+import { StyleSheet, Text, View, TouchableOpacity, } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Camera } from 'expo-camera'
+import * as Sharing from 'expo-sharing'
+import { IconButton } from 'react-native-paper'
+import { LoadingModal } from '../components'
+import { SIZES, COLORS } from '../constant'
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState(null)
   const [isRecording, setRecording] = useState(false)
   const [isFlash, setFlash] = useState(Camera.Constants.FlashMode.off)
+  const [modalVisible, setModalVisible] = useState(false)
 
   useEffect(() => {
     (async () => {
@@ -16,14 +20,14 @@ export default function CameraScreen() {
       if (cameraPermission.status === "granted" && microphonePermission.status === "granted" ) {
         setHasPermission('granted');
       } 
-    })();
-  }, []);
+    })()
+  }, [])
 
   if (hasPermission === null) {
     return <View />
   }
   if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+    return <Text>No access to camera</Text>
   }
 
   const handleRecord = async () => {
@@ -38,59 +42,68 @@ export default function CameraScreen() {
         setFlash(Camera.Constants.FlashMode.off)
       }, 3500
     )
-    const recordedVideo = await this.camera.recordAsync({maxDuration:5, mute:true})
+    const recordedVideo = await this.camera.recordAsync({ maxDuration:5, mute:true })
     console.log(recordedVideo)
-    Sharing.shareAsync(recordedVideo.uri)
+    setModalVisible(true)
+    await Sharing.shareAsync(recordedVideo.uri)
     setRecording(false)
+    setModalVisible(false)
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={{flex:1}}>
         <Camera style={styles.camera} flashMode={isFlash} ref={ref => {this.camera = ref;}}/>
-        <View style={styles.buttonContainer}>
+        <View style={{flex:1, justifyContent:'center'}}>
           {!isRecording 
           ?
           <TouchableOpacity
-            style={styles.button}
+            style={styles.buttonContainer}
             onPress={() => {
               handleRecord()
             }}>
-            <Text style={styles.text}> Record </Text>
+            <IconButton
+            icon="video-box"
+            color={COLORS.white}
+            size={36}
+            />
           </TouchableOpacity>
           :
           <TouchableOpacity
-            style={styles.button}
+            style={{...styles.buttonContainer, backgroundColor:COLORS.lightRed}}
             >
-            <Text style={styles.text}> Recording </Text>
+              <IconButton
+              icon="video-box"
+              color={COLORS.white}
+              size={36}
+              />
           </TouchableOpacity>
           }
-          </View>
+        </View>
+        <LoadingModal modalVisible={modalVisible} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+    backgroundColor: COLORS.white
   },
   camera: {
-    height: viewSize.windowWidth * 1.33,
+    height: SIZES.width * 1.33,
     width: '100%'
   },
-  buttonContainer: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
-    margin: 20,
-  },
-  button: {
-    flex: 1,
-    alignSelf: 'flex-end',
-    alignItems: 'center',
+  buttonContainer:{
+    alignItems:'center',
+    marginHorizontal:20,
+    marginVertical:10,
+    borderRadius:5,
+    backgroundColor: COLORS.lightBlue,
   },
   text: {
     fontSize: 18,
+    color: COLORS.white
   },
 });

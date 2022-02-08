@@ -1,3 +1,5 @@
 import CameraScreen from "./CameraScreen";
+import HomeScreen from "./HomeScreen";
+import ResultScreen from "./ResultScreen";
 
-export default CameraScreen;
+export { HomeScreen, CameraScreen, ResultScreen };

@@ -1,3 +1,4 @@
-import viewSize from "./theme";
+import images from "./images";
+import theme, { COLORS, SIZES } from "./theme";
 
-export default viewSize
+export { images, theme, COLORS, SIZES };
